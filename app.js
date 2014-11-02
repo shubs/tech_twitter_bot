@@ -46,7 +46,7 @@ function go(){
 						follow(target);
 					}
 				});
-			}, 5000);
+			}, 40000);
 		});
 
 	});
