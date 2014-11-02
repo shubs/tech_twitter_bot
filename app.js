@@ -6,63 +6,62 @@ var Twit = require('twit');
 //
 //  tweet 'hello world!'
 //
-var Bot = module.exports = function() { 
-  this.twit = new Twit(credentials.twitter);
-};
+T = new Twit(credentials.twitter);
 
 
 
 //
 //  choose a random friend of one of your followers, and follow that user
 //
-Bot.prototype.mingle = function (callback) {
-  var self = this;
+function mingle(){
+	var self = this;
   
-  this.twit.get('followers/ids', function(err, reply) {
-      if(err) { return callback(err); }
+  	T.get('followers/ids', function(err, reply) {
+      if(err) { console.log(err); }
       
       var followers = reply.ids
         , randFollower  = randIndex(followers);
         
-      self.twit.get('friends/ids', { user_id: randFollower }, function(err, reply) {
-          if(err) { return callback(err); }
+      T.get('friends/ids', { user_id: randFollower }, function(err, reply) {
+          if(err) { console.log(err); }
           
           var friends = reply.ids
             , target  = randIndex(friends);
             
-          self.twit.post('friendships/create', { id: target }, callback);
+          T.post('friendships/create', { id: target });
+          console.log("followed : " + target);
         })
-    })
-};
+    });
+}
 
 //
 //  prune your followers list; unfollow a friend that hasn't followed you back
-//
-Bot.prototype.prune = function (callback) {
-  var self = this;
+// //
+// Bot.prototype.prune = function (callback) {
+//   var self = this;
   
-  this.twit.get('followers/ids', function(err, reply) {
-      if(err) return callback(err);
+//   this.twit.get('followers/ids', function(err, reply) {
+//       if(err) return callback(err);
       
-      var followers = reply.ids;
+//       var followers = reply.ids;
       
-      self.twit.get('friends/ids', function(err, reply) {
-          if(err) return callback(err);
+//       self.twit.get('friends/ids', function(err, reply) {
+//           if(err) return callback(err);
           
-          var friends = reply.ids
-            , pruned = false;
+//           var friends = reply.ids
+//             , pruned = false;
           
-          while(!pruned) {
-            var target = randIndex(friends);
+//           while(!pruned) {
+//             var target = randIndex(friends);
             
-            if(!~followers.indexOf(target)) {
-              pruned = true;
-              self.twit.post('friendships/destroy', { id: target }, callback);   
-            }
-          }
-      });
-  });
-};
+//             if(!~followers.indexOf(target)) {
+//               pruned = true;
+//               self.twit.post('friendships/destroy', { id: target }, callback);   
+//             }
+//           }
+//       });
+//   });
+// };
 
 function randIndex (arr) {
   var index = Math.floor(arr.length*Math.random());
@@ -70,6 +69,21 @@ function randIndex (arr) {
 };
 
 setInterval(function() {
-	B = new Bot();
-	B.mingle(console.log);
-}, 1000);
+	  
+	T.get('followers/ids',  function (err, data, response) {
+	    if(err) { console.log(err); }
+
+		var randFollower  = randIndex(data.ids);
+
+		T.get('friends/ids', { user_id: randFollower },function (err, data, response) {
+			if(err) { console.log(err); }
+
+			var friends = data.ids;
+			var target  = randIndex(friends);
+			console.log(target);
+
+			T.post('friendships/create', { user_id: target, follow: true },function (err, data, response) {console.log(err)});
+		})
+
+	})
+}, 2000);
