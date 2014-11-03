@@ -28,6 +28,51 @@ function unfollow(target){
 	});
 }
 
+function unfollow_useless(target){
+	T.get('users/lookup', { user_id: target },  function (err, data, response) {
+		if(err) { console.log(err); }
+
+		var last_tweet = Date.parse(data[0].status.created_at);
+		var current_time = new Date();
+
+		// We decrease one week to the current_time
+		var max_delay = current_time.setHours(current_time.getHours() - (24 * 7));
+
+		console.log("[Bad] last_tweet < max_delay : " +  (last_tweet > max_delay));
+		if (last_tweet < max_delay){
+			unfollow(target);
+		}
+		else{
+			console.log("Let " + target + "be a friend !");
+		}
+
+	});
+}
+
+function follow_good(target){
+	T.get('users/lookup', { user_id: target },  function (err, data, response) {
+		if(err) { console.log(err); }
+
+		// checking if the tweets are posted less than one week
+		var last_tweet = Date.parse(data[0].status.created_at);
+		var current_time = new Date();
+
+		// We decrease one week to the current_time
+		var max_delay = current_time.setHours(current_time.getHours() - (24 * 7));
+
+		var enough_updated = last_tweet > max_delay;
+		var enough_famous = ((data[0].friends_count > 350) && (data[0].followers_count < 1200));
+
+		console.log("[Good] last_tweet > max_delay : " +  enough_updated);
+		console.log(data[0].screen_name + " followings : " + data[0].friends_count + ", followers : " + data[0].followers_count + ": " + enough_famous);
+
+		if (enough_updated && enough_famous){
+			follow(target);
+		}
+
+	});
+}
+
 function go(){
 	T.get('followers/ids',	function (err, data, response) {
 			if(err) { console.log(err); }
@@ -57,24 +102,6 @@ function go(){
 }
 
 
-function unfollow_useless(target){
-	T.get('users/lookup', { user_id: target },  function (err, data, response) {
-		if(err) { console.log(err); }
-
-		var last_tweet = Date.parse(data[0].status.created_at);
-		var current_time = new Date();
-
-		// We decrease one week to the current_time
-		var max_delay = current_time.setHours(current_time.getHours() - (24 * 7));
-
-		console.log("last_tweet < max_delay : " +  (last_tweet > max_delay));
-		if (last_tweet < max_delay){
-			unfollow(target);
-		}
-
-	});
-}
-
 function unfollow_useless_friends(){
 	T.get('friends/ids',	function (err, data, response) {
 		friends = data.ids;
@@ -82,4 +109,4 @@ function unfollow_useless_friends(){
 	});
 }
 
-unfollow_useless(11158722);
+follow_good(11158722);
