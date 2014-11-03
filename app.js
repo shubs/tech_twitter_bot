@@ -101,6 +101,41 @@ function go(){
 	});
 }
 
+function update_db(target_cursor){
+	T.get('friends/list', {skip_status : true, include_user_entities:false, count:200, cursor : target_cursor},	function (err, data, response) {
+		if(err) { console.log(err); }
+
+		var following_list = data.users;
+
+		following_list.forEach(function(value, index){
+			console.log(value.screen_name + " - "+index);
+
+			var obj = {
+				user_id : data[0].user_id,
+				screen_name : data[0].screen_name,
+				date_of_follow : ,
+				followers : ,
+				followings : ,
+				is_following_me : ,
+				last_tweet : ,
+				nb_tweet : ,
+				score : // 1-5
+			}
+
+		});
+
+		// recurse
+		if (data.next_cursor > 0){
+			update_db(data.next_cursor);
+		}
+
+	});
+
+}
+
+update_db();
+console.log("ddd");
+
 function follow_machine(){
 	console.log("**** Following at " + new Date() + " ****");
 }
