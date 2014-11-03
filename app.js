@@ -3,10 +3,10 @@ var credentials = require('./credentials.js');
 
 var Twit = require('twit');
 
+// Connetion with firebase
+var Firebase = require("firebase");
+var myFirebaseRef = new Firebase("https://twlist.firebaseio.com/");
 
-//
-//	tweet 'hello world!'
-//
 T = new Twit(credentials.twitter);
 
 function randIndex (arr) {
@@ -101,12 +101,14 @@ function go(){
 	});
 }
 
-
-function unfollow_useless_friends(){
-	T.get('friends/ids',	function (err, data, response) {
-		friends = data.ids;
-
-	});
+function follow_machine(){
+	console.log("**** Following at " + new Date() + " ****");
 }
 
-follow_good(11158722);
+function unfollow_machine(){
+	console.log("**** Unfollowing at " + new Date() + " ****");
+}
+
+// setInterval(unfollow_machine, 2000);
+//
+// setInterval(follow_machine, 500);
