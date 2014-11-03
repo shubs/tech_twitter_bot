@@ -38,13 +38,18 @@ function unfollow_useless(target){
 		// We decrease one week to the current_time
 		var max_delay = current_time.setHours(current_time.getHours() - (24 * 7));
 
-		console.log("[Bad] last_tweet < max_delay : " +  (last_tweet > max_delay));
-		if (last_tweet < max_delay){
-			unfollow(target);
-		}
-		else{
-			console.log("Let " + target + "be a friend !");
-		}
+		T.get('friendships/show', { target_id: target },  function (err, data, response) {
+			var follows_me = data.relationship.target.followed_by;
+
+			console.log("[Bad] last_tweet < max_delay : " +  (last_tweet > max_delay));
+			console.log("follows_me : " + follows_me);
+			if ((last_tweet < max_delay) && (!follows_me)){
+				unfollow(target);
+			}
+			else{
+				console.log("Let " + target + "be a friend !");
+			}
+		});
 
 	});
 }
@@ -73,34 +78,6 @@ function follow_good(target){
 	});
 }
 
-function go(){
-	T.get('followers/ids',	function (err, data, response) {
-			if(err) { console.log(err); }
-
-		var randFollower = randIndex(data.ids);
-
-		T.get('friends/ids', { user_id: randFollower },function (err, data, response) {
-			if(err) { console.log(err); }
-
-			var friends = data.ids;
-
-			setInterval(function() {
-				var target	= randIndex(friends);
-				console.log(target);
-				T.get('users/lookup', { user_id: target },  function (err, data, response) {
-					if(err) { console.log(err); }
-					console.log(data[0].screen_name + " followers : "+data[0].followers_count + ", followings : "+data[0].friends_count);
-					var good = ((data[0].followers_count < 700) && (data[0].friends_count > 200));
-					if (good){
-						follow(target);
-					}
-				});
-			}, 4000);
-		});
-
-	});
-}
-
 function update_db(target_cursor){
 	T.get('friends/list', {skip_status : true, include_user_entities:false, count:200, cursor : target_cursor},	function (err, data, response) {
 		if(err) { console.log(err); }
@@ -109,32 +86,32 @@ function update_db(target_cursor){
 
 		following_list.forEach(function(value, index){
 			console.log(value.screen_name + " - "+index);
-
-			var obj = {
-				user_id : data[0].user_id,
-				screen_name : data[0].screen_name,
-				date_of_follow : ,
-				followers : ,
-				followings : ,
-				is_following_me : ,
-				last_tweet : ,
-				nb_tweet : ,
-				score : // 1-5
-			}
+			//
+			// var obj = {
+			// 	user_id : value.id,
+			// 	screen_name : value.screen_name,
+			// 	date_of_follow : ,
+			// 	followers : ,
+			// 	followings : ,
+			// 	is_following_me : ,
+			// 	last_tweet : ,
+			// 	nb_tweet : ,
+			// 	score : // 1-5
+			// }
 
 		});
 
-		// recurse
-		if (data.next_cursor > 0){
-			update_db(data.next_cursor);
-		}
+		// // recurse
+		// if (data.next_cursor > 0){
+		// 	update_db(data.next_cursor);
+		// }
 
 	});
 
 }
-
-update_db();
-console.log("ddd");
+//
+// update_db();
+unfollow_useless(619146464);
 
 function follow_machine(){
 	console.log("**** Following at " + new Date() + " ****");
