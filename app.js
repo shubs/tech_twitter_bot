@@ -3,6 +3,8 @@ var credentials = require('./credentials.js');
 
 var Twit = require('twit');
 
+var sleep = require('sleep');
+
 // Connetion with firebase
 var Firebase = require("firebase");
 var myFirebaseRef = new Firebase("https://twlist.firebaseio.com/");
@@ -106,7 +108,7 @@ function update_db(target_cursor){
 
 		});
 
-
+		//
 		// following_list.forEach(function(value, index){
 		// 	//recup grace a users/lookup
 		// 	friends_array[value.id_str] = {
@@ -115,6 +117,7 @@ function update_db(target_cursor){
 		// 		nb_tweet : 1,
 		// 	};
 		// 	console.log("Update 2 ... for " + index);
+		// 	sleep.usleep(100000);
 		// });
 		//
 		// following_list.forEach(function(value, index){
@@ -128,6 +131,7 @@ function update_db(target_cursor){
 		//
 		// 	});
 		// 	console.log("Update 3 ... for " + index);
+		// 	sleep.usleep(100000);
 		// });
 
 
@@ -153,3 +157,4 @@ function unfollow_machine(){
 // setInterval(unfollow_machine, 2000);
 //
 // setInterval(follow_machine, 500);
+// setInterval(update_db, 43200000); //half a day
