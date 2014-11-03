@@ -3,6 +3,7 @@ var credentials = require('./credentials.js');
 
 var Twit = require('twit');
 
+
 //
 //	tweet 'hello world!'
 //
@@ -14,14 +15,17 @@ function randIndex (arr) {
 }
 
 function follow(target){
-	T.post('friendships/create', {user_id: target, follow: true},function (err, data, response) {
+	T.post('friendships/create', {user_id: target},function (err, data, response) {
 		if(err) { console.log(err); }
-		console.log("followed");
+		console.log(target + " + followed");
 	});
 }
 
-function good_friend_to_follow(id){
-
+function unfollow(target){
+	T.post('friendships/destroy', {user_id: target, follow: true},function (err, data, response) {
+		if(err) { console.log(err); }
+		console.log(target + " - unfollowed");
+	});
 }
 
 function go(){
@@ -46,10 +50,32 @@ function go(){
 						follow(target);
 					}
 				});
-			}, 40000);
+			}, 4000);
 		});
 
 	});
 }
 
-go();
+
+function unfollow_useless(target){
+	T.get('users/lookup', { user_id: target },  function (err, data, response) {
+		if(err) { console.log(err); }
+
+		var last_tweet = Date.parse(data[0].status.created_at);
+		var current_time = new Date();
+		var least_time = current_time.setHours(current_time.getHours() - (24 * 7));
+		if (last_tweet > least_time){
+			unfollow(target);
+		}
+
+	});
+}
+
+function unfollow_useless_friends(){
+	T.get('friends/ids',	function (err, data, response) {
+		friends = data.ids;
+
+	});
+}
+
+unfollow_useless(11158722);
