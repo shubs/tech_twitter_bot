@@ -29,6 +29,7 @@ function unfollow(target){
 }
 
 function unfollow_useless(target){
+	console.log("Trying unfollow " + target);
 	T.get('users/lookup', { user_id: target },  function (err, data, response) {
 		if(err) { console.log(err); }
 
@@ -43,7 +44,7 @@ function unfollow_useless(target){
 
 			console.log("[Bad] last_tweet < max_delay : " +  (last_tweet > max_delay));
 			console.log("follows_me : " + follows_me);
-			if ((last_tweet < max_delay) && (!follows_me)){
+			if ((last_tweet < max_delay) || (!follows_me)){
 				unfollow(target);
 			}
 			else{
@@ -83,35 +84,63 @@ function update_db(target_cursor){
 		if(err) { console.log(err); }
 
 		var following_list = data.users;
+		var friends_array = [];
+
 
 		following_list.forEach(function(value, index){
-			console.log(value.screen_name + " - "+index);
-			//
-			// var obj = {
-			// 	user_id : value.id,
-			// 	screen_name : value.screen_name,
-			// 	date_of_follow : ,
-			// 	followers : ,
-			// 	followings : ,
-			// 	is_following_me : ,
-			// 	last_tweet : ,
-			// 	nb_tweet : ,
-			// 	score : // 1-5
-			// }
+			friends_array[value.screen_name] = {
+				user_id : value.id,
+				screen_name : value.screen_name,
+				date_of_follow : 0,
+				followers : value.followers_count,
+				followings : value.friends_count,
+				follows_me : 0,
+				last_tweet : 0,
+				nb_tweet : 0,
+				score : 0// 1-5
+			};
+			console.log("Update 1 ... for " + index);
+
+			var postsRef = myFirebaseRef.child(value.screen_name);
+			postsRef.set(friends_array[value.screen_name]);
 
 		});
 
-		// // recurse
-		// if (data.next_cursor > 0){
-		// 	update_db(data.next_cursor);
-		// }
+
+		// following_list.forEach(function(value, index){
+		// 	//recup grace a users/lookup
+		// 	friends_array[value.id_str] = {
+		// 		date_of_follow : 1,
+		// 		last_tweet : 1,
+		// 		nb_tweet : 1,
+		// 	};
+		// 	console.log("Update 2 ... for " + index);
+		// });
+		//
+		// following_list.forEach(function(value, index){
+		// 	//recup grace a friendships/show
+		//
+		// 	T.get('friendships/show', { target_id: value.id },  function (err, data, response) {
+		// 		var follows_me = data.relationship.target.followed_by;
+		// 		friends_array[value.id_str] = {
+		// 			follows_me : follows_me
+		// 		};
+		//
+		// 	});
+		// 	console.log("Update 3 ... for " + index);
+		// });
+
+
+		// recurse
+		if (data.next_cursor > 0){
+			update_db(data.next_cursor);
+		}
 
 	});
 
 }
 //
-// update_db();
-unfollow_useless(619146464);
+update_db();
 
 function follow_machine(){
 	console.log("**** Following at " + new Date() + " ****");
