@@ -15,14 +15,14 @@ function randIndex (arr) {
 }
 
 function follow(target){
-	T.post('friendships/create', {user_id: target},function (err, data, response) {
+	T.post('friendships/create', {user_id: target, follow: true},function (err, data, response) {
 		if(err) { console.log(err); }
 		console.log(target + " + followed");
 	});
 }
 
 function unfollow(target){
-	T.post('friendships/destroy', {user_id: target, follow: true},function (err, data, response) {
+	T.post('friendships/destroy', {user_id: target},function (err, data, response) {
 		if(err) { console.log(err); }
 		console.log(target + " - unfollowed");
 	});
@@ -63,8 +63,12 @@ function unfollow_useless(target){
 
 		var last_tweet = Date.parse(data[0].status.created_at);
 		var current_time = new Date();
-		var least_time = current_time.setHours(current_time.getHours() - (24 * 7));
-		if (last_tweet > least_time){
+
+		// We decrease one week to the current_time
+		var max_delay = current_time.setHours(current_time.getHours() - (24 * 7));
+
+		console.log("last_tweet < max_delay : " +  (last_tweet > max_delay));
+		if (last_tweet < max_delay){
 			unfollow(target);
 		}
 
