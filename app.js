@@ -6,8 +6,8 @@ var Twit = require('twit');
 var sleep = require('sleep');
 
 // Connetion with firebase
-var Firebase = require("firebase");
-var myFirebaseRef = new Firebase("https://twlist.firebaseio.com/");
+// var Firebase = require("firebase");
+// var myFirebaseRef = new Firebase("https://twlist.firebaseio.com/");
 
 T = new Twit(credentials.twitter);
 
@@ -92,6 +92,32 @@ function follow_good(target){
 	});
 }
 
+
+function follow_machine(){
+	T.get('followers/ids',	function (err, data, response) {
+			if(err) { console.log(err); }
+
+		var randFollower = randIndex(data.ids);
+		console.log("randFollower" + randFollower);
+
+		T.get('friends/ids', { user_id: randFollower },function (err, data, response) {
+			if(err) { console.log(err); }
+
+
+		console.log("friends/ids");
+			var friends = data.ids;
+
+			setInterval(function() {
+				var target	= randIndex(friends);
+				console.log(target);
+				follow_good(target);
+			}, 1000);
+		});
+
+	});
+}
+
+
 function update_db(target_cursor){
 	T.get('friends/list', {skip_status : true, include_user_entities:false, count:45, cursor : target_cursor},	function (err, data, response) {
 		if(err) { console.log(err); }
@@ -158,18 +184,18 @@ function update_db(target_cursor){
 
 }
 //
-update_db();
-rate_limite_info();
-
-function follow_machine(){
-	console.log("**** Following at " + new Date() + " ****");
-}
+//update_db();
+//rate_limite_info();
+//
+// function follow_machine(){
+// 	console.log("**** Following at " + new Date() + " ****");
+// }
 
 function unfollow_machine(){
 	console.log("**** Unfollowing at " + new Date() + " ****");
 }
 
-// setInterval(unfollow_machine, 2000);
+ follow_machine();
 //
 // setInterval(follow_machine, 500);
 // setInterval(update_db, 43200000); //half a day
