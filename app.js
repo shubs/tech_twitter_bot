@@ -16,6 +16,16 @@ function randIndex (arr) {
 	return arr[index];
 }
 
+function rate_limite_info(){
+	T.get('application/rate_limit_status', function (err, data, response) {
+		if(err) { console.log(err); }
+		console.log(data.resources.friends);
+		console.log(data.resources.users);
+		console.log(data.resources.friendships);
+	});
+
+}
+
 function follow(target){
 	T.post('friendships/create', {user_id: target, follow: true},function (err, data, response) {
 		if(err) { console.log(err); }
@@ -42,11 +52,12 @@ function unfollow_useless(target){
 		var max_delay = current_time.setHours(current_time.getHours() - (24 * 7));
 
 		T.get('friendships/show', { target_id: target },  function (err, data, response) {
-			var follows_me = data.relationship.target.followed_by;
-
-			console.log("[Bad] last_tweet < max_delay : " +  (last_tweet > max_delay));
-			console.log("follows_me : " + follows_me);
-			if ((last_tweet < max_delay) || (!follows_me)){
+			var follows_me = data.relationship.target.following;
+//good for the (last_tweet > max_delay)
+			console.log(target + " [Bad] last_tweet < max_delay : " +  (last_tweet > max_delay));
+			console.log(target + " follows_me : " + follows_me);
+			// if ((!follows_me) || (last_tweet > max_delay)){
+			if (!follows_me){
 				unfollow(target);
 			}
 			else{
@@ -82,7 +93,7 @@ function follow_good(target){
 }
 
 function update_db(target_cursor){
-	T.get('friends/list', {skip_status : true, include_user_entities:false, count:200, cursor : target_cursor},	function (err, data, response) {
+	T.get('friends/list', {skip_status : true, include_user_entities:false, count:45, cursor : target_cursor},	function (err, data, response) {
 		if(err) { console.log(err); }
 
 		var following_list = data.users;
@@ -90,21 +101,23 @@ function update_db(target_cursor){
 
 
 		following_list.forEach(function(value, index){
-			friends_array[value.screen_name] = {
-				user_id : value.id,
-				screen_name : value.screen_name,
-				date_of_follow : 0,
-				followers : value.followers_count,
-				followings : value.friends_count,
-				follows_me : 0,
-				last_tweet : 0,
-				nb_tweet : 0,
-				score : 0// 1-5
-			};
-			console.log("Update 1 ... for " + index);
+			// friends_array[value.screen_name] = {
+			// 	user_id : value.id,
+			// 	screen_name : value.screen_name,
+			// 	date_of_follow : 0,
+			// 	followers : value.followers_count,
+			// 	followings : value.friends_count,
+			// 	follows_me : 0,
+			// 	last_tweet : 0,
+			// 	nb_tweet : 0,
+			// 	score : 0// 1-5
+			// };
+			// console.log("Update 1 ... for " + index);
+			//
+			// var postsRef = myFirebaseRef.child(value.screen_name);
+			// postsRef.set(friends_array[value.screen_name]);
 
-			var postsRef = myFirebaseRef.child(value.screen_name);
-			postsRef.set(friends_array[value.screen_name]);
+			unfollow_useless(value.id);
 
 		});
 
@@ -124,7 +137,7 @@ function update_db(target_cursor){
 		// 	//recup grace a friendships/show
 		//
 		// 	T.get('friendships/show', { target_id: value.id },  function (err, data, response) {
-		// 		var follows_me = data.relationship.target.followed_by;
+		// 		var follows_me = data.relationship.target.following;
 		// 		friends_array[value.id_str] = {
 		// 			follows_me : follows_me
 		// 		};
@@ -138,6 +151,7 @@ function update_db(target_cursor){
 		// recurse
 		if (data.next_cursor > 0){
 			update_db(data.next_cursor);
+
 		}
 
 	});
@@ -145,6 +159,7 @@ function update_db(target_cursor){
 }
 //
 update_db();
+rate_limite_info();
 
 function follow_machine(){
 	console.log("**** Following at " + new Date() + " ****");
