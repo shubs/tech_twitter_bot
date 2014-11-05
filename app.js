@@ -3,7 +3,6 @@ var credentials = require('./credentials.js');
 
 var Twit = require('twit');
 
-var sleep = require('sleep');
 
 // Connetion with firebase
 // var Firebase = require("firebase");
