@@ -16,7 +16,8 @@ function display_cool(obj_rate){
       console.log(
         "limit : " + obj_rate[attributename][item].limit+
         "\t remain : " + obj_rate[attributename][item].remaining+
-        "\t reset : " + (obj_rate[attributename][item].reset - (Math.round(+new Date()/1000))) + " s"
+        "\t reset : " + (obj_rate[attributename][item].reset - (Math.round(+new Date()/1000))) + " s\t"+
+        item
       );
     }
   }
@@ -29,8 +30,7 @@ function rate_limite_info(){
     display_cool(data.resources);
 
   });
-
 }
 
 
-setInterval(rate_limite_info,1000);
+setInterval(rate_limite_info, 1000);
