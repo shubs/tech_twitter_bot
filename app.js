@@ -4,6 +4,8 @@ var credentials = require('./credentials.js');
 var Twit = require('twit');
 
 T = new Twit(credentials.twitter);
+T2 = new Twit(credentials.twitter2);
+T3 = new Twit(credentials.twitter3);
 
 //Connetion with firebase
 var Firebase = require("firebase");
@@ -108,37 +110,51 @@ function follow_machine(){
 
 
 function update_db(target_cursor){
-	T.get('friends/list', {skip_status : true, include_user_entities:false, count:90, cursor : target_cursor},	function (err, data, response) {
-		if(err) { console.log(err); }
+	var count = 0;
+	T.get('friends/list', {skip_status : true, include_user_entities:false, count:150, cursor : target_cursor},	function (err, data, response) {
+		if(err) {
+			console.log(err);
+
+			if (err.statusCode == 429){
+
+			}
+
+		}
 
 		var following_list = data.users;
 		var friends_array = [];
 
 
 		following_list.forEach(function(value, index){
-
-
 			T.get('friendships/show', { target_id: value.id },  function (err, data2, response) {
 				if(err) { console.log(err); }
 				var follows_me = data2.relationship.target.following;
 
-				friends_array[value.screen_name] = {
-					user_id : value.id,
-					screen_name : value.screen_name,
-					date_of_follow : 0,
-					followers : value.followers_count,
-					followings : value.friends_count,
-					follows_me : follows_me,
-					last_tweet : 0,
-					nb_tweet : 0,
-					score : 0// 1-5
-				};
+				T.get('users/lookup', { user_id: value.id },  function (err, data3, response) {
+					if(err) { console.log(err); }
+
+					// checking if the tweets are posted less than one week
+					var last_tweet = Date.parse(data3[0].status.created_at);
+
+					friends_array[value.screen_name] = {
+						user_id : value.id,
+						screen_name : value.screen_name,
+						date_of_follow : 0,
+						followers : value.followers_count,
+						followings : value.friends_count,
+						follows_me : follows_me,
+						last_tweet : last_tweet,
+						nb_tweet : data3[0].statuses_count,
+						score : 0// 1-5
+					};
+
+					var postsRef = myFirebaseRef.child(value.screen_name);
+					postsRef.set(friends_array[value.screen_name]);
+
+					console.log("Update ... for " + value.screen_name + (++count));
+				});
+
 			});
-			console.log("Update ... for " + value.screen_name);
-
-			var postsRef = myFirebaseRef.child(value.screen_name);
-			postsRef.set(friends_array[value.screen_name]);
-
 
 		});
 
