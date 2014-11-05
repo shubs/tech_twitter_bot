@@ -33,4 +33,4 @@ function rate_limite_info(){
 }
 
 
-setInterval(rate_limite_info, 1000);
+setInterval(rate_limite_info, 3000);

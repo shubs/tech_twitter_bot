@@ -1,5 +1,5 @@
 // This file have to be created in the root folder to specify your twitter and mailjet credentials
-var credentials = require('./credentials2.js');
+var credentials = require('./credentials.js');
 
 var Twit = require('twit');
 
@@ -117,45 +117,30 @@ function update_db(target_cursor){
 
 		following_list.forEach(function(value, index){
 
-			friends_array[value.screen_name] = {
-				user_id : value.id,
-				screen_name : value.screen_name,
-				date_of_follow : 0,
-				followers : value.followers_count,
-				followings : value.friends_count,
-				follows_me : 0,
-				last_tweet : 0,
-				nb_tweet : 0,
-				score : 0// 1-5
-			};
-
-			console.log("Update 1 ... for " + index);
-
-			friends_array[value.screen_name] = {
-				date_of_follow : 1,
-				last_tweet : 1,
-				nb_tweet : 1,
-			};
-			console.log("Update 2 ... for " + index);
 
 			T.get('friendships/show', { target_id: value.id },  function (err, data2, response) {
 				if(err) { console.log(err); }
 				var follows_me = data2.relationship.target.following;
-				friends_array[value.screen_name] = {
-					follows_me : follows_me
-				};
 
+				friends_array[value.screen_name] = {
+					user_id : value.id,
+					screen_name : value.screen_name,
+					date_of_follow : 0,
+					followers : value.followers_count,
+					followings : value.friends_count,
+					follows_me : follows_me,
+					last_tweet : 0,
+					nb_tweet : 0,
+					score : 0// 1-5
+				};
 			});
-			console.log("Update 3 ... for " + index);
+			console.log("Update ... for " + value.screen_name);
 
 			var postsRef = myFirebaseRef.child(value.screen_name);
 			postsRef.set(friends_array[value.screen_name]);
 
 
 		});
-
-
-
 
 		// recurse
 		if (data.next_cursor > 0){
