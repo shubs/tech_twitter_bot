@@ -82,6 +82,9 @@ function follow_good(target){
 	});
 }
 
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
 
 function follow_machine(){
 	console.log("**** Following at " + new Date() + " ****");
@@ -115,10 +118,6 @@ function update_db(target_cursor){
 		if(err) {
 			console.log(err);
 
-			if (err.statusCode == 429){
-
-			}
-
 		}
 
 		var following_list = data.users;
@@ -129,6 +128,8 @@ function update_db(target_cursor){
 			T.get('friendships/show', { target_id: value.id },  function (err, data2, response) {
 				if(err) { console.log(err); }
 				var follows_me = data2.relationship.target.following;
+
+				var r = getRandomInt(1,3);
 
 				T.get('users/lookup', { user_id: value.id },  function (err, data3, response) {
 					if(err) { console.log(err); }
