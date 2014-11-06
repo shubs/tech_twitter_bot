@@ -131,7 +131,7 @@ function follow_machine(){
 				var target	= randIndex(friends);
 				console.log(target);
 				follow_good(target);
-			}, 200);
+			}, 100);
 		});
 
 	});
