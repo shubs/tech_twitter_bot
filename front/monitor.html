@@ -1,0 +1,27 @@
+
+    <html>
+      <head>
+        <title>Firebase DB</title>
+
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script src="https://cdn.firebase.com/js/client/1.1.1/firebase.js"></script>
+        <script>
+          $(document).ready(function() {
+            var a = 0;
+            var postsRef = new Firebase("https://twlist.firebaseio.com");
+            postsRef.on('child_added', function (snapshot) {
+              var newPost = snapshot.val();
+              ++a;
+              $('h2').html(a);
+            });
+
+          });
+        </script>
+      </head>
+      <body>
+        <h1>Firebase DB monitor</h1>
+        <h2></h2>
+
+      </body>
+    </html>

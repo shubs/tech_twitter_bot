@@ -124,17 +124,14 @@ function update_db(target_cursor){
 	var count = 0;
 	var T = give_apikey();
 	T.get('friends/list', {skip_status : true, include_user_entities:false, count:150, cursor : target_cursor},	function (err, data, response) {
-		if(err) {
-			console.log(err);
-
-		}
+		if(err) {console.log(err);}
 
 		var following_list = data.users;
 		var friends_array = [];
 
-
 		following_list.forEach(function(value, index){
 			var T = give_apikey();
+
 			T.get('friendships/show', { target_id: value.id },  function (err, data2, response) {
 				if(err) { console.log(err); }
 				var follows_me = data2.relationship.target.following;
@@ -161,7 +158,7 @@ function update_db(target_cursor){
 					var postsRef = myFirebaseRef.child(value.screen_name);
 					postsRef.set(friends_array[value.screen_name]);
 
-					console.log("Update ... for " + value.screen_name + (++count));
+					console.log("Update ... for " + value.screen_name);
 				});
 
 			});
