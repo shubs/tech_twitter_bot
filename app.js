@@ -32,39 +32,55 @@ function follow(target){
 	});
 }
 
-function unfollow(target){
+function unfollow(target, screen_name){
 	var T = give_apikey();
 	T.post('friendships/destroy', {user_id: target},function (err, data, response) {
 		if(err) { console.log(err); }
-		console.log(target + " - unfollowed");
+		var userref = new Firebase('https://twlist.firebaseio.com/'+screen_name);
+
+		userref.remove(function	(e){
+			if(err) {
+				console.log(e);
+			}
+			else {
+				console.log(target + " - unfollowed");
+			}
+		});
+		// All data at the Firebase location for user 'fred' has been deleted
+		// (including any child data)
 	});
 }
 
-function unfollow_useless(target){
+function unfollow_machine(){
+	console.log("**** Unfollowing at " + new Date() + " ****");
+
 	var T = give_apikey();
-	console.log("Trying unfollow " + target);
-	T.get('users/lookup', { user_id: target },  function (err, data, response) {
-		if(err) { console.log(err); }
 
-		var last_tweet = Date.parse(data[0].status.created_at);
-		var current_time = new Date();
+	myFirebaseRef.on("value", function(snapshot) {
+	  var db = snapshot.val();
 
-		// We decrease one week to the current_time
-		var max_delay = current_time.setHours(current_time.getHours() - (24 * 7));
+		for(var attributename in db){
+			var cur = db[attributename];
 
-		T.get('friendships/show', { target_id: target },  function (err, data, response) {
-			var follows_me = data.relationship.target.following;
+			console.log("Trying unfollow " + cur.screen_name);
+			var last_tweet = Date.parse(cur.last_tweet);
+			var current_time = new Date();
+
+			// We decrease one week to the current_time
+			var max_delay = current_time.setHours(current_time.getHours() - (24 * 7));
+
 			//good for the (last_tweet > max_delay)
-			console.log(target + " [Bad] last_tweet < max_delay : " +  (last_tweet > max_delay));
-			console.log(target + " follows_me : " + follows_me);
+			console.log(cur.screen_name + " [Bad] last_tweet < max_delay : " +  (last_tweet > max_delay));
+			console.log(cur.screen_name + " follows_me : " + cur.follows_me);
 			// if ((!follows_me) || (last_tweet > max_delay)){
-			if (!follows_me){
-				unfollow(target);
+			if (!cur.follows_me){
+				unfollow(cur.user_id, cur.screen_name);
 			}
 			else{
-				console.log("Let " + target + "be a friend !");
+				console.log("Let " + cur.user_id + "be a friend !");
 			}
-		});
+		}
+
 
 	});
 }
@@ -175,11 +191,7 @@ function update_db(target_cursor){
 
 }
 
-update_db();
-
-function unfollow_machine(){
-	console.log("**** Unfollowing at " + new Date() + " ****");
-}
+unfollow_machine();
 
 //
 // setInterval(follow_machine, 500);
