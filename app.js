@@ -3,9 +3,12 @@ var credentials = require('./credentials.js');
 
 var Twit = require('twit');
 
-T = new Twit(credentials.twitter);
-T2 = new Twit(credentials.twitter2);
-T3 = new Twit(credentials.twitter3);
+var T1 = new Twit(credentials.twitter);
+var T2 = new Twit(credentials.twitter2);
+var T3 = new Twit(credentials.twitter3);
+var T4 = new Twit(credentials.twitter4);
+var T5 = new Twit(credentials.twitter5);
+var T_array = [T1, T2, T3, T4, T5];
 
 //Connetion with firebase
 var Firebase = require("firebase");
@@ -16,7 +19,13 @@ function randIndex (arr) {
 	return arr[index];
 }
 
+function give_apikey(){
+	T = randIndex(T_array);
+	return T;
+}
+
 function follow(target){
+	var T = give_apikey();
 	T.post('friendships/create', {user_id: target, follow: true},function (err, data, response) {
 		if(err) { console.log(err); }
 		console.log(target + " + followed");
@@ -24,6 +33,7 @@ function follow(target){
 }
 
 function unfollow(target){
+	var T = give_apikey();
 	T.post('friendships/destroy', {user_id: target},function (err, data, response) {
 		if(err) { console.log(err); }
 		console.log(target + " - unfollowed");
@@ -31,6 +41,7 @@ function unfollow(target){
 }
 
 function unfollow_useless(target){
+	var T = give_apikey();
 	console.log("Trying unfollow " + target);
 	T.get('users/lookup', { user_id: target },  function (err, data, response) {
 		if(err) { console.log(err); }
@@ -59,6 +70,7 @@ function unfollow_useless(target){
 }
 
 function follow_good(target){
+	var T = give_apikey();
 	T.get('users/lookup', { user_id: target },  function (err, data, response) {
 		if(err) { console.log(err); }
 
@@ -82,11 +94,8 @@ function follow_good(target){
 	});
 }
 
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
-
 function follow_machine(){
+	var T = give_apikey();
 	console.log("**** Following at " + new Date() + " ****");
 	T.get('followers/ids',	function (err, data, response) {
 			if(err) { console.log(err); }
@@ -111,9 +120,9 @@ function follow_machine(){
 	});
 }
 
-
 function update_db(target_cursor){
 	var count = 0;
+	var T = give_apikey();
 	T.get('friends/list', {skip_status : true, include_user_entities:false, count:150, cursor : target_cursor},	function (err, data, response) {
 		if(err) {
 			console.log(err);
@@ -125,12 +134,12 @@ function update_db(target_cursor){
 
 
 		following_list.forEach(function(value, index){
+			var T = give_apikey();
 			T.get('friendships/show', { target_id: value.id },  function (err, data2, response) {
 				if(err) { console.log(err); }
 				var follows_me = data2.relationship.target.following;
 
-				var r = getRandomInt(1,3);
-
+				var T = give_apikey();
 				T.get('users/lookup', { user_id: value.id },  function (err, data3, response) {
 					if(err) { console.log(err); }
 
