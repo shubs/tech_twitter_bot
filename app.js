@@ -46,8 +46,6 @@ function unfollow(target, screen_name){
 				console.log(target + " - unfollowed");
 			}
 		});
-		// All data at the Firebase location for user 'fred' has been deleted
-		// (including any child data)
 	});
 }
 
@@ -91,22 +89,25 @@ function follow_good(target){
 		if(err) { console.log(err); }
 
 		// checking if the tweets are posted less than one week
-		var last_tweet = Date.parse(data[0].status.created_at);
-		var current_time = new Date();
+		if (data[0].status !== undefined){
 
-		// We decrease one week to the current_time
-		var max_delay = current_time.setHours(current_time.getHours() - (24 * 7));
+			var last_tweet = Date.parse(data[0].status.created_at);
+			var current_time = new Date();
 
-		var enough_updated = last_tweet > max_delay;
-		var enough_famous = ((data[0].friends_count > 350) && (data[0].followers_count < 1200));
+			// We decrease one week to the current_time
+			var max_delay = current_time.setHours(current_time.getHours() - (24 * 7));
 
-		console.log("[Good] last_tweet > max_delay : " +  enough_updated);
-		console.log(data[0].screen_name + " followings : " + data[0].friends_count + ", followers : " + data[0].followers_count + ": " + enough_famous);
+			var enough_updated = last_tweet > max_delay;
+			var enough_famous = ((data[0].friends_count > 400) && (data[0].followers_count < 600));
 
-		if (enough_updated && enough_famous){
-			follow(target);
+			console.log("[Good] last_tweet > max_delay : " +  enough_updated);
+			console.log(data[0].screen_name + " followings : " + data[0].friends_count + ", followers : " + data[0].followers_count + ": " + enough_famous);
+
+			if (enough_updated && enough_famous){
+				follow(target);
+			}
+
 		}
-
 	});
 }
 
@@ -130,7 +131,7 @@ function follow_machine(){
 				var target	= randIndex(friends);
 				console.log(target);
 				follow_good(target);
-			}, 1000);
+			}, 200);
 		});
 
 	});
@@ -191,8 +192,8 @@ function update_db(target_cursor){
 
 }
 
-unfollow_machine();
-
+follow_machine();
 //
-// setInterval(follow_machine, 500);
+// // setInterval(follow_machine, 500);
 // setInterval(update_db, 43200000); //half a day
+// setInterval(unfollow_machine(), 43200000); //half a day
