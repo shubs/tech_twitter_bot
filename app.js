@@ -32,6 +32,33 @@ function follow(target){
 	});
 }
 
+function trend(){
+	var params = {
+	    q: '#dotcss',
+			since: datestring(),
+			result_type: 'mixed'
+	};
+
+  bot.twit.get('search', params, function (err, reply) {
+    if(err) return handleError(err);
+
+    var max = 0, popular;
+
+    var tweets = reply.results,
+		i = tweets.length;
+
+    while(i--) {
+      var tweet = tweets[i]
+        , popularity = tweet.metadata.recent_retweets;
+
+      if(popularity > max) {
+        max = popularity;
+        popular = tweet.text;
+      }
+    }
+	});
+}
+
 function unfollow(target, screen_name){
 	var T = give_apikey();
 	T.post('friendships/destroy', {user_id: target},function (err, data, response) {
@@ -193,7 +220,7 @@ function update_db(target_cursor){
 }
 
 follow_machine();
-//
+
 // // setInterval(follow_machine, 500);
 // setInterval(update_db, 43200000); //half a day
-// setInterval(unfollow_machine(), 43200000); //half a day
+// setInterval(unfollow_machine, 43200000); //half a day
