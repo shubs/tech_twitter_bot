@@ -32,30 +32,24 @@ function follow(target){
 	});
 }
 
-function trend(){
+function follow_in_event(){
+
+	var current_time = new Date();
+
+	// We decrease one week to the current_time
+	var since_date = current_time.setHours(current_time.getHours() - (24 * 7));
 	var params = {
 	    q: '#dotcss',
-			since: datestring(),
-			result_type: 'mixed'
+			since: since_date,
+			result_type: 'mixed',
+			count:100
 	};
-
-  bot.twit.get('search', params, function (err, reply) {
-    if(err) return handleError(err);
-
-    var max = 0, popular;
-
-    var tweets = reply.results,
-		i = tweets.length;
-
-    while(i--) {
-      var tweet = tweets[i]
-        , popularity = tweet.metadata.recent_retweets;
-
-      if(popularity > max) {
-        max = popularity;
-        popular = tweet.text;
-      }
-    }
+	var T = give_apikey();
+	T.get('search/tweets', params,function (err, data, response) {
+  	data.statuses.forEach(function(value,index){
+			console.log(value.user.name);
+			follow(value.user.id)
+		});
 	});
 }
 
@@ -219,7 +213,7 @@ function update_db(target_cursor){
 
 }
 
-follow_machine();
+follow_in_event();
 
 // // setInterval(follow_machine, 500);
 // setInterval(update_db, 43200000); //half a day
