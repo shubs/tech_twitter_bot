@@ -8,43 +8,46 @@ var T2 = new Twit(credentials.twitter2);
 var T3 = new Twit(credentials.twitter3);
 var T4 = new Twit(credentials.twitter4);
 var T5 = new Twit(credentials.twitter5);
-var T_array = [T1, T2, T3, T4, T5];
+var keyArray = [T1, T2, T3, T4, T5];
 
 //Connetion with firebase
-var Firebase = require("firebase");
-var myFirebaseRef = new Firebase("https://twlist.firebaseio.com/");
+var Firebase = require('firebase');
+var myFirebaseRef = new Firebase('https://twlist.firebaseio.com/');
 
 function randIndex (arr) {
+	'use strict';
 	var index = Math.floor(arr.length*Math.random());
 	return arr[index];
 }
 
-function give_apikey(){
-	T = randIndex(T_array);
+function giveAPIkey(){
+	'use strict';
+	T = randIndex(keyArray);
 	return T;
 }
 
 function follow(target){
-	var T = give_apikey();
+	'use strict';
+	var T = giveAPIkey();
 	T.post('friendships/create', {user_id: target, follow: true},function (err, data, response) {
 		if(err) { console.log(err); }
-		console.log(target + " + followed");
+		console.log(target + ' + followed');
 	});
 }
 
-function follow_in_event(){
+function followInEvent(){
 
 	var current_time = new Date();
 
 	// We decrease one week to the current_time
 	var since_date = current_time.setHours(current_time.getHours() - (24 * 7));
 	var params = {
-	    q: '#dotcss',
+	    q: '#codemotion_es',
 			since: since_date,
 			result_type: 'mixed',
 			count:100
 	};
-	var T = give_apikey();
+	var T = giveAPIkey();
 	T.get('search/tweets', params,function (err, data, response) {
   	data.statuses.forEach(function(value,index){
 			console.log(value.user.name);
@@ -54,7 +57,7 @@ function follow_in_event(){
 }
 
 function unfollow(target, screen_name){
-	var T = give_apikey();
+	var T = giveAPIkey();
 	T.post('friendships/destroy', {user_id: target},function (err, data, response) {
 		if(err) { console.log(err); }
 		var userref = new Firebase('https://twlist.firebaseio.com/'+screen_name);
@@ -64,24 +67,24 @@ function unfollow(target, screen_name){
 				console.log(e);
 			}
 			else {
-				console.log(target + " - unfollowed");
+				console.log(target + ' - unfollowed');
 			}
 		});
 	});
 }
 
 function unfollow_machine(){
-	console.log("**** Unfollowing at " + new Date() + " ****");
+	console.log('**** Unfollowing at ' + new Date() + ' ****');
 
-	var T = give_apikey();
+	var T = giveAPIkey();
 
-	myFirebaseRef.on("value", function(snapshot) {
+	myFirebaseRef.on('value', function(snapshot) {
 	  var db = snapshot.val();
 
 		for(var attributename in db){
 			var cur = db[attributename];
 
-			console.log("Trying unfollow " + cur.screen_name);
+			console.log('Trying unfollow ' + cur.screen_name);
 			var last_tweet = Date.parse(cur.last_tweet);
 			var current_time = new Date();
 
@@ -89,14 +92,14 @@ function unfollow_machine(){
 			var max_delay = current_time.setHours(current_time.getHours() - (24 * 7));
 
 			//good for the (last_tweet > max_delay)
-			console.log(cur.screen_name + " [Bad] last_tweet < max_delay : " +  (last_tweet > max_delay));
-			console.log(cur.screen_name + " follows_me : " + cur.follows_me);
+			console.log(cur.screen_name + ' [Bad] last_tweet < max_delay : ' +  (last_tweet > max_delay));
+			console.log(cur.screen_name + ' follows_me : ' + cur.follows_me);
 			// if ((!follows_me) || (last_tweet > max_delay)){
 			if (!cur.follows_me){
 				unfollow(cur.user_id, cur.screen_name);
 			}
 			else{
-				console.log("Let " + cur.user_id + "be a friend !");
+				console.log('Let ' + cur.user_id + 'be a friend !');
 			}
 		}
 
@@ -105,7 +108,7 @@ function unfollow_machine(){
 }
 
 function follow_good(target){
-	var T = give_apikey();
+	var T = giveAPIkey();
 	T.get('users/lookup', { user_id: target },  function (err, data, response) {
 		if(err) { console.log(err); }
 
@@ -121,8 +124,8 @@ function follow_good(target){
 			var enough_updated = last_tweet > max_delay;
 			var enough_famous = ((data[0].friends_count > 400) && (data[0].followers_count < 600));
 
-			console.log("[Good] last_tweet > max_delay : " +  enough_updated);
-			console.log(data[0].screen_name + " followings : " + data[0].friends_count + ", followers : " + data[0].followers_count + ": " + enough_famous);
+			console.log('[Good] last_tweet > max_delay : ' +  enough_updated);
+			console.log(data[0].screen_name + ' followings : ' + data[0].friends_count + ', followers : ' + data[0].followers_count + ': ' + enough_famous);
 
 			if (enough_updated && enough_famous){
 				follow(target);
@@ -133,19 +136,19 @@ function follow_good(target){
 }
 
 function follow_machine(){
-	var T = give_apikey();
-	console.log("**** Following at " + new Date() + " ****");
+	var T = giveAPIkey();
+	console.log('**** Following at ' + new Date() + ' ****');
 	T.get('followers/ids',	function (err, data, response) {
 			if(err) { console.log(err); }
 
 		var randFollower = randIndex(data.ids);
-		console.log("randFollower" + randFollower);
+		console.log('randFollower' + randFollower);
 
 		T.get('friends/ids', { user_id: randFollower },function (err, data, response) {
 			if(err) { console.log(err); }
 
 
-		console.log("friends/ids");
+		console.log('friends/ids');
 			var friends = data.ids;
 
 			setInterval(function() {
@@ -160,7 +163,7 @@ function follow_machine(){
 
 function update_db(target_cursor){
 	var count = 0;
-	var T = give_apikey();
+	var T = giveAPIkey();
 	T.get('friends/list', {skip_status : true, include_user_entities:false, count:150, cursor : target_cursor},	function (err, data, response) {
 		if(err) {console.log(err);}
 
@@ -168,13 +171,13 @@ function update_db(target_cursor){
 		var friends_array = [];
 
 		following_list.forEach(function(value, index){
-			var T = give_apikey();
+			var T = giveAPIkey();
 
 			T.get('friendships/show', { target_id: value.id },  function (err, data2, response) {
 				if(err) { console.log(err); }
 				var follows_me = data2.relationship.target.following;
 
-				var T = give_apikey();
+				var T = giveAPIkey();
 				T.get('users/lookup', { user_id: value.id },  function (err, data3, response) {
 					if(err) { console.log(err); }
 
@@ -196,7 +199,7 @@ function update_db(target_cursor){
 					var postsRef = myFirebaseRef.child(value.screen_name);
 					postsRef.set(friends_array[value.screen_name]);
 
-					console.log("Update ... for " + value.screen_name);
+					console.log('Update ... for ' + value.screen_name);
 				});
 
 			});
@@ -213,7 +216,7 @@ function update_db(target_cursor){
 
 }
 
-follow_in_event();
+followInEvent();
 
 // // setInterval(follow_machine, 500);
 // setInterval(update_db, 43200000); //half a day
