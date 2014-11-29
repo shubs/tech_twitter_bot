@@ -48,18 +48,18 @@ function follow(target){
 	});
 }
 
-function followInEvent(){
+function followInEvent(event_name){
 
 	var current_time = new Date();
 
 	// We decrease one week to the current_time
 	var since_date = current_time.setHours(current_time.getHours() - (24 * 7));
 	var params = {
-	    q: '#HTML5Meetup',
-			since: since_date,
+	    q: "#symfonycon",
+			// since: since_date,
 			result_type: 'mixed',
-			count:99,
-			max_id:537752659823177700
+			count:100,
+			max_id:538360264018518016
 	};
 	var T = giveAPIkey();
 	T.get('search/tweets', params,function (err, data, response) {
@@ -196,8 +196,13 @@ function update_db(target_cursor){
 				T.get('users/lookup', { user_id: value.id },  function (err, data3, response) {
 					if(err) { console.log(err); }
 
-					// checking if the tweets are posted less than one week
-					var last_tweet = Date.parse(data3[0].status.created_at);
+					if (data3[0].status != undefined){
+
+						// checking if the tweets are posted less than one week
+						var last_tweet = Date.parse(data3[0].status.created_at);
+					}else{
+						var last_tweet = 0
+					}
 
 					friends_array[value.screen_name] = {
 						user_id : value.id,
@@ -237,12 +242,20 @@ function update_db(target_cursor){
 // ['e' , 'event=ARG'   , 'start a following in event'],
 // ['h' , 'help'                , 'display this help']
 
+
 if (opt.options.unfollow){
+	console.log("option -> unfollow");
 	unfollow_machine();
 }else if (opt.options.update){
+	console.log("option -> update");
 	update_db();
 }else if (opt.options.follow){
+	console.log("option -> follow");
 	follow_machine();
 }else if (opt.options.event){
+	console.log("option -> event" + opt.options.event);
 	followInEvent(opt.options.event)
+}else{
+	console.log("node app -h");
+	process.kill()
 }
