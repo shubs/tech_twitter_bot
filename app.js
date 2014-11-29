@@ -3,6 +3,20 @@ var credentials = require('./credentials.js');
 
 var Twit = require('twit');
 
+
+// node-getopt oneline example.
+opt = require('node-getopt').create([
+  ['u' , 'unfollow'                    , 'start the follow machine'],
+  ['U'  , 'update'                , 'firebase update'],
+  ['f' , 'follow'  , 'start follow machine'],
+  ['e' , 'followinevent=ARG'   , 'start a following in event'],
+  ['h' , 'help'                , 'display this help']
+])              // create Getopt instance
+.bindHelp()     // bind option 'help' to default action
+.parseSystem(); // parse command line
+
+console.info(opt);
+
 var T1 = new Twit(credentials.twitter);
 var T2 = new Twit(credentials.twitter2);
 var T3 = new Twit(credentials.twitter3);
@@ -22,7 +36,7 @@ function randIndex (arr) {
 
 function giveAPIkey(){
 	'use strict';
-	T = randIndex(keyArray);
+	var T = randIndex(keyArray);
 	return T;
 }
 
@@ -42,16 +56,18 @@ function followInEvent(){
 	// We decrease one week to the current_time
 	var since_date = current_time.setHours(current_time.getHours() - (24 * 7));
 	var params = {
-	    q: '#codemotion_es',
+	    q: '#HTML5Meetup',
 			since: since_date,
 			result_type: 'mixed',
-			count:100
+			count:99,
+			max_id:537752659823177700
 	};
 	var T = giveAPIkey();
 	T.get('search/tweets', params,function (err, data, response) {
+		console.log(data);
   	data.statuses.forEach(function(value,index){
 			console.log(value.user.name);
-			follow(value.user.id)
+			follow_good(value.user.id)
 		});
 	});
 }
@@ -215,9 +231,3 @@ function update_db(target_cursor){
 	});
 
 }
-
-followInEvent();
-
-// // setInterval(follow_machine, 500);
-// setInterval(update_db, 43200000); //half a day
-// setInterval(unfollow_machine, 43200000); //half a day
