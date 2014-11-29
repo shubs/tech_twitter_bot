@@ -9,13 +9,12 @@ opt = require('node-getopt').create([
   ['u' , 'unfollow'                    , 'start the follow machine'],
   ['U'  , 'update'                , 'firebase update'],
   ['f' , 'follow'  , 'start follow machine'],
-  ['e' , 'followinevent=ARG'   , 'start a following in event'],
+  ['e' , 'event=ARG'   , 'start a following in event'],
   ['h' , 'help'                , 'display this help']
 ])              // create Getopt instance
 .bindHelp()     // bind option 'help' to default action
 .parseSystem(); // parse command line
 
-console.info(opt);
 
 var T1 = new Twit(credentials.twitter);
 var T2 = new Twit(credentials.twitter2);
@@ -230,4 +229,20 @@ function update_db(target_cursor){
 
 	});
 
+}
+//
+// ['u' , 'unfollow'                    , 'start the follow machine'],
+// ['U'  , 'update'                , 'firebase update'],
+// ['f' , 'follow'  , 'start follow machine'],
+// ['e' , 'event=ARG'   , 'start a following in event'],
+// ['h' , 'help'                , 'display this help']
+
+if (opt.options.unfollow){
+	unfollow_machine();
+}else if (opt.options.update){
+	update_db();
+}else if (opt.options.follow){
+	follow_machine();
+}else if (opt.options.event){
+	followInEvent(opt.options.event)
 }
