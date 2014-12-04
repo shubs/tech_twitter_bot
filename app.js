@@ -6,6 +6,7 @@ var Twit = require('twit');
 
 // node-getopt oneline example.
 opt = require('node-getopt').create([
+  ['r' , 'retweet'                    , 'start the retweeting machine'],
   ['u' , 'unfollow'                    , 'start the follow machine'],
   ['U'  , 'update'                , 'firebase update'],
   ['f' , 'follow'  , 'start follow machine'],
@@ -50,25 +51,56 @@ function follow(target){
 
 function followInEvent(event_name){
 
-	var current_time = new Date();
+  var current_time = new Date();
 
-	// We decrease one week to the current_time
-	var since_date = current_time.setHours(current_time.getHours() - (24 * 7));
-	var params = {
-	    q: "#symfonycon",
-			// since: since_date,
-			result_type: 'mixed',
-			count:100,
-			max_id:538360264018518016
-	};
-	var T = giveAPIkey();
-	T.get('search/tweets', params,function (err, data, response) {
-		console.log(data);
-  	data.statuses.forEach(function(value,index){
-			console.log(value.user.name);
-			follow_good(value.user.id)
-		});
-	});
+  // We decrease one week to the current_time
+  var since_date = current_time.setHours(current_time.getHours() - (24 * 7));
+  var params = {
+    q: "@APIdaysGlobal",
+    // since: since_date,
+    result_type: 'mixed',
+    count:100,
+    max_id:539985524786987007
+  };
+  var T = giveAPIkey();
+  T.get('search/tweets', params,function (err, data, response) {
+    console.log("__________"+data.search_metadata.next_results+"__________");
+    data.statuses.forEach(function(value,index){
+      //console.log(value.id_str);
+      follow(value.user.id)
+
+      // T.post('statuses/retweet/:id', {id: value.id},function (err, data, response) {
+      //   console.log(data);
+      // });
+    });
+  });
+}
+
+
+function retweetInEvent(event_name){
+
+  var current_time = new Date();
+
+  // We decrease one week to the current_time
+  var since_date = current_time.setHours(current_time.getHours() - (24 * 7));
+  var params = {
+    q: "#apidays",
+    // since: since_date,
+    result_type: 'mixed',
+    count:100,
+    //max_id:540058890809786368
+  };
+  var T = giveAPIkey();
+  T.get('search/tweets', params,function (err, data, response) {
+    console.log("__________"+data.search_metadata.next_results+"__________");
+    data.statuses.forEach(function(value,index){
+      follow(value.user.id)
+
+      T.post('statuses/retweet/:id', {id: value.id},function (err, data, response) {
+        console.log(data);
+      });
+    });
+  });
 }
 
 function unfollow(target, screen_name){
@@ -253,8 +285,11 @@ if (opt.options.unfollow){
 	console.log("option -> follow");
 	follow_machine();
 }else if (opt.options.event){
-	console.log("option -> event" + opt.options.event);
-	followInEvent(opt.options.event)
+  console.log("option -> event" + opt.options.event);
+  followInEvent(opt.options.event)
+}else if (opt.options.retretweet){
+  console.log("option -> retretweet" + opt.options.retweet);
+  followInEvent(opt.options.event)
 }else{
 	console.log("node app -h");
 	process.kill()
