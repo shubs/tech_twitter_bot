@@ -10,6 +10,7 @@ opt = require('node-getopt').create([
   ['u' , 'unfollow'                    , 'start the follow machine'],
   ['U'  , 'update'                , 'firebase update'],
   ['f' , 'follow'  , 'start follow machine'],
+  ['b' , 'build=ARG'  , 'start building a list'],
   ['e' , 'event=ARG'   , 'start a following in event'],
   ['h' , 'help'                , 'display this help']
 ])              // create Getopt instance
@@ -27,6 +28,7 @@ var keyArray = [T1, T2, T3, T4, T5];
 //Connetion with firebase
 var Firebase = require('firebase');
 var myFirebaseRef = new Firebase('https://twlist.firebaseio.com/');
+var myFirebaseReftofollow = new Firebase('https://tofollowlist.firebaseio.com/');
 
 function randIndex (arr) {
 	'use strict';
@@ -208,6 +210,45 @@ function follow_machine(){
 	});
 }
 
+function buildList(name){
+  console.info(name);
+  var T = giveAPIkey();
+  console.log('**** Following at ' + new Date() + ' ****');
+    T.get('followers/ids', { screen_name: name, count:5000 },function (err, data, response) {
+      if(err) { console.log(err); }
+      var fl = data.ids;
+      fl.forEach(function(value, index){
+          console.log(index + "\t" + value);
+          var pref = myFirebaseReftofollow.child(value);
+          pref.set({status:false});
+      });
+
+      if (data.next_cursor !== 0){
+        T.get('followers/ids', { cursor:data.next_cursor, screen_name: name, count:5000 },function (err, data2, response) {
+            if(err) { console.log(err); }
+            var fl = data2.ids;
+            fl.forEach(function(value, index){
+                console.log(index + "\t" + value);
+                var pref = myFirebaseReftofollow.child(value);
+                pref.set({status:false});
+            });
+            if (data2.next_cursor !== 0){
+              T.get('followers/ids', { cursor:data2.next_cursor, screen_name: name, count:5000 },function (err, data3, response) {
+                  if(err) { console.log(err); }
+                  var fl = data3.ids;
+                  fl.forEach(function(value, index){
+                      console.log(index + "\t" + value);
+                      var pref = myFirebaseReftofollow.child(value);
+                      pref.set({status:false});
+                  });
+              });
+            }
+        });
+      }
+
+    });
+}
+
 function update_db(target_cursor){
 	var count = 0;
 	var T = giveAPIkey();
@@ -267,26 +308,22 @@ function update_db(target_cursor){
 	});
 
 }
-//
-// ['u' , 'unfollow'                    , 'start the follow machine'],
-// ['U'  , 'update'                , 'firebase update'],
-// ['f' , 'follow'  , 'start follow machine'],
-// ['e' , 'event=ARG'   , 'start a following in event'],
-// ['h' , 'help'                , 'display this help']
-
 
 if (opt.options.unfollow){
 	console.log("option -> unfollow");
 	unfollow_machine();
 }else if (opt.options.update){
-	console.log("option -> update");
-	update_db();
+  console.log("option -> update");
+  update_db();
 }else if (opt.options.follow){
 	console.log("option -> follow");
 	follow_machine();
 }else if (opt.options.event){
   console.log("option -> event" + opt.options.event);
   followInEvent(opt.options.event)
+}else if (opt.options.build){
+  console.log("option -> build" + opt.options.build);
+  buildList(opt.options.build)
 }else if (opt.options.retretweet){
   console.log("option -> retretweet" + opt.options.retweet);
   followInEvent(opt.options.event)
