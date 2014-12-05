@@ -3,6 +3,8 @@ var credentials = require('./credentials.js');
 
 var Twit = require('twit');
 
+var async = require('async');
+
 
 // node-getopt oneline example.
 opt = require('node-getopt').create([
@@ -10,6 +12,7 @@ opt = require('node-getopt').create([
   ['u' , 'unfollow'                    , 'start the follow machine'],
   ['U'  , 'update'                , 'firebase update'],
   ['f' , 'follow'  , 'start follow machine'],
+  ['l' , 'list'  , 'start following a list'],
   ['b' , 'build=ARG'  , 'start building a list'],
   ['e' , 'event=ARG'   , 'start a following in event'],
   ['h' , 'help'                , 'display this help']
@@ -77,7 +80,6 @@ function followInEvent(event_name){
     });
   });
 }
-
 
 function retweetInEvent(event_name){
 
@@ -210,6 +212,29 @@ function follow_machine(){
 	});
 }
 
+function followList(){
+  myFirebaseReftofollow.on('value', function(snapshot) {
+    var db = snapshot.val();
+    var count = 50;
+
+    for(var v in db){
+      var cur = db[v];
+
+      if (cur.status == false && count > 0){
+        count--;
+        console.log(cur.id+" \t;;; count = " +count);
+        var myFirebaseReftofollow2 = new Firebase('https://tofollowlist.firebaseio.com/'+cur.id);
+        myFirebaseReftofollow2.remove();
+      }
+      else {
+        break;
+      }
+    }
+
+
+  });
+}
+
 function buildList(name){
   console.info(name);
   var T = giveAPIkey();
@@ -220,7 +245,7 @@ function buildList(name){
       fl.forEach(function(value, index){
           console.log(index + "\t" + value);
           var pref = myFirebaseReftofollow.child(value);
-          pref.set({status:false});
+          pref.set({id:value ,status:false});
       });
 
       if (data.next_cursor !== 0){
@@ -230,7 +255,7 @@ function buildList(name){
             fl.forEach(function(value, index){
                 console.log(index + "\t" + value);
                 var pref = myFirebaseReftofollow.child(value);
-                pref.set({status:false});
+                pref.set({id:value ,status:false});
             });
             if (data2.next_cursor !== 0){
               T.get('followers/ids', { cursor:data2.next_cursor, screen_name: name, count:5000 },function (err, data3, response) {
@@ -239,7 +264,7 @@ function buildList(name){
                   fl.forEach(function(value, index){
                       console.log(index + "\t" + value);
                       var pref = myFirebaseReftofollow.child(value);
-                      pref.set({status:false});
+                      pref.set({id:value ,status:false});
                   });
               });
             }
@@ -316,8 +341,11 @@ if (opt.options.unfollow){
   console.log("option -> update");
   update_db();
 }else if (opt.options.follow){
-	console.log("option -> follow");
-	follow_machine();
+  console.log("option -> follow");
+  follow_machine();
+}else if (opt.options.list){
+  console.log("option -> list");
+  followList();
 }else if (opt.options.event){
   console.log("option -> event" + opt.options.event);
   followInEvent(opt.options.event)
