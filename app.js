@@ -215,19 +215,16 @@ function follow_machine(){
 function followList(){
   myFirebaseReftofollow.on('value', function(snapshot) {
     var db = snapshot.val();
+
     var count = 50;
 
     for(var v in db){
+
       var cur = db[v];
 
-      if (cur.status == false && count > 0){
-        count--;
-        console.log(cur.id+" \t;;; count = " +count);
-        var myFirebaseReftofollow2 = new Firebase('https://tofollowlist.firebaseio.com/'+cur.id);
-        myFirebaseReftofollow2.remove();
-      }
-      else {
-        break;
+      if (v > 1622544498){
+
+        follow(v);
       }
     }
 
