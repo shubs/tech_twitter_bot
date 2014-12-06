@@ -216,13 +216,11 @@ function followList(){
   myFirebaseReftofollow.on('value', function(snapshot) {
     var db = snapshot.val();
 
-    var count = 50;
-
     for(var v in db){
 
       var cur = db[v];
 
-      if (v > 1622544498){
+      if (v > 2796822539){
 
         follow(v);
       }
