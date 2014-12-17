@@ -2,9 +2,7 @@
 var credentials = require('./credentials.js');
 
 var Twit = require('twit');
-
 var async = require('async');
-
 
 // node-getopt oneline example.
 opt = require('node-getopt').create([
@@ -12,7 +10,7 @@ opt = require('node-getopt').create([
   ['u' , 'unfollow'                    , 'start the follow machine'],
   ['U'  , 'update'                , 'firebase update'],
   ['f' , 'follow'  , 'start follow machine'],
-  ['l' , 'list'  , 'start following a list'],
+  ['l' , 'list'  , 'follow a list'],
   ['b' , 'build=ARG'  , 'start building a list'],
   ['e' , 'event=ARG'   , 'start a following in event'],
   ['h' , 'help'                , 'display this help']
@@ -80,6 +78,7 @@ function followInEvent(event_name){
     });
   });
 }
+
 
 function retweetInEvent(event_name){
 
@@ -212,20 +211,41 @@ function follow_machine(){
 	});
 }
 
+function cool(x){follow(x.id);}
+
 function followList(){
+  var T = giveAPIkey();
+
   myFirebaseReftofollow.on('value', function(snapshot) {
-    var db = snapshot.val();
+  var db = snapshot.val();
+  var list = [];
+  for(var attributename in db){
+    var cur = db[attributename];
+    list.push(cur);
+  }
 
-    for(var v in db){
 
-      var cur = db[v];
 
-      if (v > 2796822539){
+  async.map(list, cool, function(err, result){
+    // console.log("cool 2 for " + result + err);
+    // var pref = myFirebaseReftofollow.child(attributename);
+    // pref.set({status:true});
 
-        follow(v);
-      }
-    }
+    console.log("s");
+  });
 
+
+
+
+    // async.forEach(Object.keys(db), function (item, cool){
+    //
+    //   // var pref = myFirebaseReftofollow.child(attributename);
+    //   // pref.set({status:true});
+    //
+    //   console.log("follow" + item);
+    // }, function(err) {
+    //     console.log('iterating done');
+    // });
 
   });
 }
@@ -234,32 +254,32 @@ function buildList(name){
   console.info(name);
   var T = giveAPIkey();
   console.log('**** Following at ' + new Date() + ' ****');
-    T.get('followers/ids', { screen_name: name, count:5000 },function (err, data, response) {
+    T.get('followers/ids', { screen_name: name, count:200 },function (err, data, response) {
       if(err) { console.log(err); }
       var fl = data.ids;
       fl.forEach(function(value, index){
           console.log(index + "\t" + value);
           var pref = myFirebaseReftofollow.child(value);
-          pref.set({id:value ,status:false});
+          pref.set({id:value, status:false});
       });
 
       if (data.next_cursor !== 0){
-        T.get('followers/ids', { cursor:data.next_cursor, screen_name: name, count:5000 },function (err, data2, response) {
+        T.get('followers/ids', { cursor:data.next_cursor, screen_name: name, count:200 },function (err, data2, response) {
             if(err) { console.log(err); }
             var fl = data2.ids;
             fl.forEach(function(value, index){
                 console.log(index + "\t" + value);
                 var pref = myFirebaseReftofollow.child(value);
-                pref.set({id:value ,status:false});
+                pref.set({id:value, status:false});
             });
             if (data2.next_cursor !== 0){
-              T.get('followers/ids', { cursor:data2.next_cursor, screen_name: name, count:5000 },function (err, data3, response) {
+              T.get('followers/ids', { cursor:data2.next_cursor, screen_name: name, count:200 },function (err, data3, response) {
                   if(err) { console.log(err); }
                   var fl = data3.ids;
                   fl.forEach(function(value, index){
                       console.log(index + "\t" + value);
                       var pref = myFirebaseReftofollow.child(value);
-                      pref.set({id:value ,status:false});
+                      pref.set({id:value, status:false});
                   });
               });
             }
@@ -336,20 +356,20 @@ if (opt.options.unfollow){
   console.log("option -> update");
   update_db();
 }else if (opt.options.follow){
-  console.log("option -> follow");
-  follow_machine();
+	console.log("option -> follow");
+	follow_machine();
+}else if (opt.options.event){
+  console.log("option -> event" + opt.options.event);
+  followInEvent(opt.options.event);
+}else if (opt.options.build){
+  console.log("option -> build" + opt.options.build);
+  buildList(opt.options.build);
 }else if (opt.options.list){
   console.log("option -> list");
   followList();
-}else if (opt.options.event){
-  console.log("option -> event" + opt.options.event);
-  followInEvent(opt.options.event)
-}else if (opt.options.build){
-  console.log("option -> build" + opt.options.build);
-  buildList(opt.options.build)
 }else if (opt.options.retretweet){
   console.log("option -> retretweet" + opt.options.retweet);
-  followInEvent(opt.options.event)
+  followInEvent(opt.options.event);
 }else{
 	console.log("node app -h");
 	process.kill()
