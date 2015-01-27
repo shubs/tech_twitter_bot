@@ -219,19 +219,20 @@ function followList(){
   myFirebaseReftofollow.on('value', function(snapshot) {
   var db = snapshot.val();
   var list = [];
+  var n = 0;
+
   for(var attributename in db){
+    if (n > 400 && attributename > 47990015)
+    {
+      break;
+    }
+    n = n+1;
     var cur = db[attributename];
     list.push(cur);
   }
 
-
-
   async.map(list, cool, function(err, result){
-    // console.log("cool 2 for " + result + err);
-    // var pref = myFirebaseReftofollow.child(attributename);
-    // pref.set({status:true});
 
-    console.log("s");
   });
 
 
