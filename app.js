@@ -145,7 +145,7 @@ function unfollow_machine(){
 			console.log(cur.screen_name + ' [Bad] last_tweet < max_delay : ' +  (last_tweet > max_delay));
 			console.log(cur.screen_name + ' follows_me : ' + cur.follows_me);
 			// if ((!follows_me) || (last_tweet > max_delay)){
-			if (!cur.follows_me){
+			if (1){
 				unfollow(cur.user_id, cur.screen_name);
 			}
 			else{
@@ -250,11 +250,17 @@ function followList(){
   });
 }
 
-function buildList(name){
+function buildList(name, next, first){
   console.info(name);
   var T = giveAPIkey();
   console.log('**** Following at ' + new Date() + ' ****');
-    T.get('followers/ids', { screen_name: name, count:200 },function (err, data, response) {
+    if (!first)
+    {
+      var request = { cursor:next, screen_name: name, count:200 };
+    }else{
+      var request = {screen_name: name, count:200 };
+    }
+    T.get('followers/ids', request,function (err, data, response) {
       if(err) { console.log(err); }
       var fl = data.ids;
       fl.forEach(function(value, index){
@@ -264,6 +270,7 @@ function buildList(name){
       });
 
       if (data.next_cursor !== 0){
+        var T = giveAPIkey();
         T.get('followers/ids', { cursor:data.next_cursor, screen_name: name, count:200 },function (err, data2, response) {
             if(err) { console.log(err); }
             var fl = data2.ids;
@@ -273,6 +280,7 @@ function buildList(name){
                 pref.set({id:value, status:false});
             });
             if (data2.next_cursor !== 0){
+              var T = giveAPIkey();
               T.get('followers/ids', { cursor:data2.next_cursor, screen_name: name, count:200 },function (err, data3, response) {
                   if(err) { console.log(err); }
                   var fl = data3.ids;
@@ -281,6 +289,7 @@ function buildList(name){
                       var pref = myFirebaseReftofollow.child(value);
                       pref.set({id:value, status:false});
                   });
+                  buildList(name, data2.next_cursor, false);
               });
             }
         });
@@ -363,7 +372,7 @@ if (opt.options.unfollow){
   followInEvent(opt.options.event);
 }else if (opt.options.build){
   console.log("option -> build" + opt.options.build);
-  buildList(opt.options.build);
+  buildList(opt.options.build, 0, true);
 }else if (opt.options.list){
   console.log("option -> list");
   followList();
